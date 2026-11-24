@@ -30,7 +30,7 @@ Run the tests with `.venv/bin/python -m pytest`.
 ## Deploy to Vercel
 
 1. Create a Postgres database, for example Neon from the Vercel Marketplace, and copy its connection string.
-2. Import this repository in Vercel. `pyproject.toml` already sets the entrypoint (`[tool.vercel] entrypoint = "app.main:app"`).
+2. Import this repository in Vercel. `pyproject.toml` already sets the entrypoint (`[tool.vercel] entrypoint = "index:app"`, which loads `app.main`).
 3. Add these environment variables:
    - `DATABASE_URL`: the Postgres URL. Both `postgres://` and `postgresql://` work.
    - `SECRET_KEY`: a long random string. It signs session cookies.
