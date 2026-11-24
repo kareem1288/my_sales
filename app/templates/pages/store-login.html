@@ -1,0 +1,1297 @@
+{% extends "base.html" %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block head_include %}
+<link rel="manifest" href="/assets/store_management/my-sales.webmanifest">
+<link rel="icon" href="/api/method/store_management.api.get_brand_asset?name=my-sales-icon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#146c43">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Sales">
+<style>
+:root {
+    color-scheme: light;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    min-height: 100%;
+    overflow: hidden;
+}
+
+body {
+    margin: 0;
+    background: #f8fbff;
+    color: #0d1731;
+}
+
+body main.container {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+}
+
+body .page-content-wrapper,
+body .page_content {
+    height: 100dvh;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body .page-breadcrumbs,
+body .page-header-wrapper,
+body .page-footer {
+    display: none;
+}
+
+.page-shell {
+    height: 100dvh;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.35%;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 25% 55%, rgba(86, 118, 255, 0.08), transparent 25%),
+        radial-gradient(circle at 74% 41%, rgba(124, 145, 255, 0.05), transparent 25%),
+        #fbfdff;
+}
+
+.login-shell {
+    width: 97.4%;
+    max-width: none;
+    height: 95.6dvh;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+    border: 0.0625rem solid #d7e1ef;
+    border-radius: 1rem;
+    background: #ffffff;
+    box-shadow: 0 1.2rem 3rem rgba(27, 43, 76, 0.08);
+}
+
+.left-panel,
+.right-panel {
+    position: relative;
+    height: 100%;
+    min-height: 0;
+}
+
+.left-panel {
+    flex: 0 0 48.2%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5.2% 4.2% 3.4%;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 77% 47%, rgba(76, 96, 217, 0.07) 0 23%, transparent 24%),
+        linear-gradient(180deg, #fbfdff 0%, #f6f9ff 100%);
+    border-right: 0.0625rem solid #edf2fa;
+}
+
+.brand-block {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+}
+
+.brand-mark {
+    width: clamp(4.4%, 5vw, 9.8%);
+    height: auto;
+    aspect-ratio: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16%;
+    background: linear-gradient(145deg, #5c66f3 0%, #2036d4 100%);
+    box-shadow: 0 1rem 2rem rgba(36, 57, 208, 0.20);
+    color: #ffffff;
+    font-size: clamp(2rem, 3.1vw, 3rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0;
+}
+
+.brand-title {
+    margin: 3% 0 0;
+    color: #101a35;
+    font-size: clamp(1.9rem, 3vw, 2.45rem);
+    font-weight: 800;
+    line-height: 1.08;
+}
+
+.brand-subtitle {
+    margin: 2% 0 0;
+    color: #51617f;
+    font-size: clamp(1rem, 1.45vw, 1.2rem);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.retail-scene {
+    position: relative;
+    z-index: 1;
+    width: 87%;
+    max-width: 38.75rem;
+    height: auto;
+    margin: 4% auto 0;
+    aspect-ratio: 620 / 382;
+}
+
+.dot-grid {
+    position: absolute;
+    left: -6%;
+    top: 1%;
+    width: 22%;
+    height: 36%;
+    opacity: 0.45;
+    background-image: radial-gradient(#9fb0f4 0.1rem, transparent 0.1rem);
+    background-size: 12% 12%;
+}
+
+.scene-glow {
+    position: absolute;
+    inset: 8% 12% 4% 17%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(68, 94, 224, 0.13), rgba(77, 104, 228, 0) 67%);
+    filter: blur(0.25rem);
+}
+
+.pos-illustration {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    filter: drop-shadow(0 1.9rem 1.75rem rgba(58, 82, 174, 0.20));
+}
+
+.feature-row {
+    width: 86%;
+    max-width: 35.6rem;
+    display: flex;
+    gap: 7%;
+    margin: auto auto 2%;
+    position: relative;
+    z-index: 2;
+}
+
+.feature-item {
+    flex: 1 1 0;
+    display: flex;
+    gap: 8%;
+    align-items: start;
+    min-width: 0;
+}
+
+.feature-icon {
+    width: 3.25rem;
+    height: 3.25rem;
+    display: flex;
+    flex: 0 0 3.25rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20%;
+    color: #2557ec;
+    background: linear-gradient(180deg, #ffffff 0%, #f2f6ff 100%);
+    box-shadow: 0 0.75rem 1.75rem rgba(36, 57, 208, 0.12);
+}
+
+.feature-copy strong {
+    display: block;
+    color: #0d1731;
+    font-size: 0.875rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.feature-copy span {
+    display: block;
+    margin-top: 5%;
+    color: #53617d;
+    font-size: 0.8125rem;
+    line-height: 1.58;
+}
+
+.right-panel {
+    flex: 1 1 51.8%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3.9% 6.1% 2.6%;
+    background:
+        radial-gradient(circle at 54% 45%, rgba(30, 64, 175, 0.025), transparent 30%),
+        #ffffff;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 84%;
+    padding: 7.2% 8.5%;
+    border: 0.0625rem solid #e6ebf3;
+    border-radius: 0.9rem;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 1.4rem 3.4rem rgba(28, 44, 82, 0.08);
+}
+
+.login-card-heading {
+    margin-bottom: 6%;
+}
+
+.login-card-heading h1 {
+    margin: 0;
+    color: #0e1831;
+    font-size: clamp(1.55rem, 2.2vw, 1.9rem);
+    font-weight: 800;
+    line-height: 1.18;
+}
+
+.login-card-heading p {
+    margin: 2.2% 0 0;
+    color: #566783;
+    font-size: clamp(1rem, 1.35vw, 1.125rem);
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-field {
+    position: relative;
+}
+
+.form-field label {
+    display: block;
+    margin-bottom: 2.2%;
+    color: #0d1731;
+    font-size: 1rem;
+    font-weight: 750;
+    line-height: 1.2;
+}
+
+.input-shell {
+    position: relative;
+}
+
+.input-icon,
+.toggle-password {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%);
+    color: #526487;
+
+}
+
+.input-icon {
+    left: 4%;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.form-field input[type="text"],
+.form-field input[type="password"] {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-height: clamp(2.7rem, 5.15dvh, 3.35rem);
+    border: 0.0625rem solid #d8e0ec;
+    border-radius: 0.55rem;
+    outline: none;
+    background: #ffffff;
+    color: #111b34;
+    font-size: 1rem;
+    font-weight: 400;
+    padding: 0 12% 0 13%;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.form-field input::placeholder {
+    color: #72809a;
+    opacity: 1;
+}
+
+.form-field input:focus {
+    border-color: #8ba2f8;
+    box-shadow: 0 0 0 0.25rem rgba(37, 87, 236, 0.09);
+}
+
+.toggle-password {
+    right: 4%;
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+.remember-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4%;
+    margin-top: 0;
+    color: #101a35;
+    font-size: 1rem;
+    line-height: 1.25;
+}
+
+.remember-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.remember-row input[type="checkbox"] {
+    width: 1.3rem;
+    height: 1.3rem;
+    margin: 0;
+    border-radius: 0.25rem;
+    accent-color: #2563eb;
+}
+
+.remember-row a {
+    color: #0c55ff;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.remember-row a:hover {
+    text-decoration: underline;
+}
+
+.btn-submit {
+    width: 100%;
+    min-height: clamp(2.7rem, 5.15dvh, 3.35rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    font-size: 1.125rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.btn-submit {
+    border: 0;
+    color: #ffffff;
+    font-weight: 750;
+    background: linear-gradient(101deg, #4267ff 0%, #1643eb 100%);
+    box-shadow: 0 0.95rem 1.6rem rgba(31, 72, 236, 0.25);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+}
+
+.btn-submit:hover {
+    transform: translateY(-0.0625rem);
+    box-shadow: 0 1.1rem 1.9rem rgba(31, 72, 236, 0.29);
+    filter: saturate(1.03);
+}
+
+.login-form > .form-field + .form-field {
+    margin-top: 5.4%;
+}
+
+.login-form > .remember-row {
+    margin-top: 4.4%;
+}
+
+.login-form > .btn-submit {
+    margin-top: 5.4%;
+}
+
+.login-divider {
+    display: flex;
+    align-items: center;
+    gap: 4%;
+    margin: 5.2% 0;
+    color: #61708d;
+    font-size: 1rem;
+    line-height: 1;
+}
+
+.login-divider::before,
+.login-divider::after {
+    content: "";
+    flex: 1;
+    border-top: 0.0625rem solid #d7deea;
+}
+
+.btn-google {
+    width: 100%;
+    min-height: clamp(2.7rem, 5.15dvh, 3.35rem);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4%;
+    border: 0.0625rem solid #d8e0ec;
+    border-radius: 0.55rem;
+    background: #ffffff;
+    color: #0d1731;
+    font-size: 1.125rem;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.google-mark {
+    font-size: 1.35rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #4285f4 0 25%, #34a853 25% 50%, #fbbc05 50% 75%, #ea4335 75% 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.footer-copy {
+    margin: 3.5% 0 0;
+    color: #61708d;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-align: center;
+}
+
+.message-container {
+    padding: 3% 4%;
+    margin-bottom: 5%;
+    border-radius: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border: 0.0625rem solid;
+    opacity: 0;
+    transform: translateY(-0.5rem);
+    transition: all 0.25s ease;
+    position: relative;
+}
+
+.message-container .close-btn {
+    position: absolute;
+    right: 3%;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.message-container .close-btn:hover {
+    opacity: 1;
+}
+
+.message-container.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.message-container.success {
+    background: #ecfdf5;
+    color: #166534;
+    border-color: #bbf7d0;
+}
+
+.message-container.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border-color: #fecaca;
+}
+
+.message-container .icon {
+    margin-right: 2%;
+}
+
+.icon-svg {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+}
+
+@media (max-width: 56.25em) {
+    html,
+    body {
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    body .page-content-wrapper,
+    body .page_content {
+        height: auto;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .page-shell {
+        align-items: flex-start;
+        padding: 3%;
+        height: auto;
+        min-height: 100dvh;
+        overflow-x: hidden;
+        overflow-y: auto;
+    }
+
+    .login-shell {
+        flex-direction: column;
+        width: 100%;
+        max-width: 94%;
+        height: auto;
+        min-height: auto;
+        overflow: visible;
+    }
+
+    .left-panel {
+        flex: none;
+        width: 100%;
+        min-height: auto;
+        padding: 8% 6% 6%;
+        border-right: 0;
+        border-bottom: 0.0625rem solid #edf2fa;
+    }
+
+    .right-panel {
+        flex: none;
+        width: 100%;
+        min-height: auto;
+        padding: 6%;
+    }
+
+    .feature-row {
+        margin-bottom: 2%;
+    }
+}
+
+@media (max-width: 45em) {
+    .page-shell {
+        padding: 3%;
+    }
+
+    .login-shell {
+        border-radius: 0.9rem;
+    }
+
+    .left-panel {
+        padding: 8% 5% 7%;
+    }
+
+    .brand-mark {
+        width: 3.6rem;
+        height: 3.6rem;
+        font-size: 2.5rem;
+    }
+
+    .brand-title {
+        font-size: 1.95rem;
+    }
+
+    .brand-subtitle {
+        font-size: 1rem;
+    }
+
+    .retail-scene {
+        width: 100%;
+        max-width: 32.5rem;
+        margin-top: 7%;
+    }
+
+    .feature-row {
+        width: 100%;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 3%;
+    }
+
+    .feature-item {
+        max-width: 20rem;
+        margin: 0 auto;
+    }
+
+    .right-panel {
+        padding: 5%;
+    }
+
+    .login-card {
+        max-width: 100%;
+        padding: 9% 6%;
+    }
+
+    .login-card-heading h1 {
+        font-size: 1.625rem;
+    }
+
+    .login-card-heading p,
+    .btn-submit,
+    .btn-google {
+        font-size: 1rem;
+    }
+
+    .remember-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .footer-copy {
+        margin-top: 7%;
+    }
+
+    .page-shell {
+        padding: 0;
+        background: #f3f6f4;
+    }
+
+    .login-shell {
+        max-width: none;
+        min-height: 100dvh;
+        border: 0;
+        border-radius: 0;
+        background: #f3f6f4;
+        box-shadow: none;
+    }
+
+    .left-panel {
+        padding: max(2rem, env(safe-area-inset-top)) 1.25rem 1rem;
+        border: 0;
+        background: #f3f6f4;
+    }
+
+    .brand-mark { width: 3.25rem; height: 3.25rem; background: #146c43; box-shadow: 0 .75rem 1.5rem rgba(20,108,67,.2); }
+    .brand-title { margin-top: .8rem; font-size: 1.55rem; }
+    .brand-subtitle { margin-top: .35rem; font-size: .9rem; }
+    .retail-scene, .feature-row { display: none; }
+
+    .right-panel {
+        justify-content: flex-start;
+        padding: .5rem 1rem calc(2rem + env(safe-area-inset-bottom));
+        background: #f3f6f4;
+    }
+
+    .login-card {
+        padding: 1.25rem;
+        border-color: #dfe7e2;
+        border-radius: 1.25rem;
+        box-shadow: 0 .75rem 2rem rgba(25,49,37,.08);
+    }
+
+    .login-card-heading { margin-bottom: 1.25rem; }
+    .login-card-heading h1 { font-size: 1.35rem; }
+    .input-shell input { min-height: 52px; font-size: 16px; border-radius: .85rem; }
+    .btn-submit { min-height: 52px; border-radius: .85rem; background: #146c43; }
+    .footer-copy { margin-top: 1rem; }
+}
+
+@media (max-height: 48em) and (min-width: 56.26em) {
+    .page-shell {
+        align-items: flex-start;
+        padding: 1.25%;
+    }
+
+    .login-shell {
+        height: 96dvh;
+        min-height: 0;
+    }
+
+    .left-panel,
+    .right-panel {
+        padding-top: 3%;
+        padding-bottom: 3%;
+    }
+
+    .retail-scene {
+        width: 70%;
+        margin-top: 2%;
+    }
+
+    .feature-row {
+        margin-bottom: 2%;
+    }
+
+    .login-card {
+        max-width: 80%;
+        padding: 5.4% 7.4%;
+    }
+
+    .login-card-heading {
+        margin-bottom: 4.5%;
+    }
+
+    .login-form > .form-field + .form-field,
+    .login-form > .btn-submit,
+    .login-divider {
+        margin-top: 4%;
+    }
+
+    .login-form > .remember-row {
+        margin-top: 3.5%;
+    }
+
+    .login-divider {
+        margin-bottom: 4%;
+    }
+
+    .footer-copy {
+        margin-top: 2.2%;
+    }
+}
+</style>
+<link rel="stylesheet" href="/assets/store_management/css/store_management_auth.css">
+<link rel="stylesheet" href="/assets/store_management/css/my_sales_design.css?v=20261007-4">
+<script defer src="/assets/store_management/js/my_sales_reference.js?v=20261012-2"></script>
+<link rel="stylesheet" href="/assets/store_management/css/my_sales_phone.css?v=20261012-7">
+<script defer src="/assets/store_management/js/my_sales_phone.js?v=20261012-7"></script>
+{% endblock %}
+
+{% block page_content %}
+<section class="my-sales-welcome" id="my-sales-welcome" hidden aria-label="Welcome to My Sales">
+  <img src="/api/method/store_management.api.get_brand_asset?name=my-sales-logo.svg" alt="My Sales">
+  <h1>My Sales</h1><small>RETAIL BILLING</small>
+  <div class="my-sales-welcome-art" aria-hidden="true"><div class="phone-shop"><i class="phone-shop-awning"></i><i class="phone-shop-door"></i><i class="phone-shop-window"></i><i class="phone-shop-tree"></i></div></div>
+  <p>Smart Sales.<br>Simpler Business.</p><div class="phone-welcome-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+  <button type="button" id="my-sales-get-started">Get Started</button>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const welcome = document.getElementById('my-sales-welcome');
+  let seen = false;
+  try { seen = sessionStorage.getItem('my-sales-welcome-seen') === '1'; } catch (_) {}
+  welcome.hidden = seen || !window.matchMedia('(max-width:768px)').matches;
+  document.getElementById('my-sales-get-started').addEventListener('click', () => {
+    welcome.hidden = true;
+    try { sessionStorage.setItem('my-sales-welcome-seen', '1'); } catch (_) {}
+    document.querySelector('#store-login-form input')?.focus();
+  });
+});
+</script>
+
+<section class="page-shell">
+    <div class="login-shell">
+        <div class="left-panel">
+            <div class="brand-block">
+                <img class="brand-mark" src="/api/method/store_management.api.get_brand_asset?name=my-sales-icon.svg" alt="">
+                <h1 class="brand-title">My Sales</h1>
+                <p class="brand-subtitle">Smart billing for modern retail businesses</p>
+            </div>
+
+            <div class="retail-scene" aria-hidden="true">
+                <div class="dot-grid"></div>
+                <div class="scene-glow"></div>
+                <svg class="pos-illustration" viewBox="0 0 620 382" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="screenFrame" x1="185" y1="52" x2="468" y2="285" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#B3C0FF"/>
+                            <stop offset="1" stop-color="#7185E7"/>
+                        </linearGradient>
+                        <linearGradient id="screenFace" x1="198" y1="76" x2="444" y2="255" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#FFFFFF"/>
+                            <stop offset="1" stop-color="#F7FAFF"/>
+                        </linearGradient>
+                        <linearGradient id="blueButton" x1="414" y1="198" x2="483" y2="241" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#3D68FF"/>
+                            <stop offset="1" stop-color="#1646E8"/>
+                        </linearGradient>
+                        <linearGradient id="plantLeaf" x1="62" y1="232" x2="155" y2="293" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#72D1BC"/>
+                            <stop offset="1" stop-color="#258E82"/>
+                        </linearGradient>
+                        <linearGradient id="paperBlue" x1="464" y1="167" x2="549" y2="281" gradientUnits="userSpaceOnUse">
+                            <stop stop-color="#EEF4FF"/>
+                            <stop offset="1" stop-color="#C7D3FF"/>
+                        </linearGradient>
+                    </defs>
+
+                    <ellipse cx="306" cy="343" rx="241" ry="28" fill="#D7E0FF" opacity="0.54"/>
+
+                    <path d="M87 286C95 255 92 231 73 209C101 208 122 236 116 268C138 239 158 231 181 236C170 264 145 282 117 285C99 300 88 301 87 286Z" fill="url(#plantLeaf)"/>
+                    <path d="M112 287C104 262 89 235 70 211M111 286C126 265 148 247 178 236M112 286C112 266 116 246 125 225" stroke="#1E7A73" stroke-width="2" opacity="0.45"/>
+                    <path d="M71 292H145L137 351C135 362 126 369 115 369H101C90 369 81 362 79 351L71 292Z" fill="#F8FBFF"/>
+                    <ellipse cx="108" cy="292" rx="37" ry="11" fill="#D3DDF6"/>
+                    <ellipse cx="108" cy="292" rx="25" ry="7" fill="#31406A"/>
+                    <path d="M80 305C86 320 129 320 136 305L132 350C130 358 123 362 115 362H101C93 362 86 358 84 350L80 305Z" fill="#FFFFFF"/>
+
+                    <path d="M236 262H345L361 319C364 332 354 344 341 344H223C210 344 201 331 205 319L236 262Z" fill="#EEF3FF" stroke="#C5D1FA" stroke-width="2"/>
+                    <path d="M262 259H320V321H240L262 259Z" fill="#FFFFFF" opacity="0.84"/>
+                    <rect x="212" y="315" width="146" height="28" rx="14" fill="#E9EEFB"/>
+
+                    <g transform="translate(186 47) rotate(-9 147 104)">
+                        <rect x="0" y="0" width="292" height="198" rx="16" fill="url(#screenFrame)"/>
+                        <rect x="12" y="13" width="268" height="172" rx="12" fill="url(#screenFace)"/>
+                        <circle cx="252" cy="28" r="4" fill="#CCD6F1"/>
+                        <circle cx="269" cy="25" r="4" fill="#CCD6F1"/>
+                        <circle cx="29" cy="33" r="5" fill="#A9B9FF"/>
+                        <rect x="47" y="29" width="26" height="5" rx="2.5" fill="#D7DDEA"/>
+                        <rect x="90" y="28" width="7" height="7" rx="3.5" fill="#D7DDEA"/>
+                        <rect x="105" y="26" width="27" height="5" rx="2.5" fill="#D7DDEA"/>
+                        <rect x="20" y="55" width="63" height="112" rx="6" fill="#F6F8FD"/>
+                        <rect x="96" y="55" width="112" height="112" rx="6" fill="#F6F8FD"/>
+                        <rect x="216" y="55" width="58" height="112" rx="6" fill="#F6F8FD"/>
+                        <rect x="31" y="74" width="31" height="5" rx="2.5" fill="#DEE5F2"/>
+                        <rect x="31" y="96" width="43" height="6" rx="3" fill="#E8EDF7"/>
+                        <rect x="31" y="113" width="28" height="5" rx="2.5" fill="#E8EDF7"/>
+                        <rect x="31" y="139" width="41" height="6" rx="3" fill="#E8EDF7"/>
+                        <circle cx="106" cy="73" r="5" fill="#E3E8F3"/>
+                        <rect x="119" y="69" width="43" height="6" rx="3" fill="#DDE4F1"/>
+                        <rect x="100" y="92" width="74" height="6" rx="3" fill="#E5EBF5"/>
+                        <circle cx="106" cy="111" r="6" fill="#E3E8F3"/>
+                        <rect x="119" y="107" width="65" height="6" rx="3" fill="#E2E8F3"/>
+                        <circle cx="106" cy="134" r="6" fill="#E3E8F3"/>
+                        <rect x="119" y="130" width="76" height="6" rx="3" fill="#E2E8F3"/>
+                        <circle cx="106" cy="154" r="6" fill="#E3E8F3"/>
+                        <rect x="119" y="151" width="45" height="6" rx="3" fill="#E2E8F3"/>
+                        <rect x="228" y="70" width="16" height="5" rx="2.5" fill="#D2D9EA"/>
+                        <text x="224" y="91" fill="#1B2743" font-family="Inter, Arial, sans-serif" font-size="9" font-weight="800">Total</text>
+                        <text x="224" y="116" fill="#1B2743" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" textLength="46" lengthAdjust="spacingAndGlyphs">₹2,450.00</text>
+                        <rect x="222" y="137" width="48" height="24" rx="5" fill="url(#blueButton)"/>
+                        <text x="240" y="153" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="7" font-weight="800">Next</text>
+                    </g>
+
+                    <path d="M432 239H543C558 239 570 251 570 266V328H405V266C405 251 417 239 432 239Z" fill="#E8EEFF"/>
+                    <path d="M432 220H543C554 220 563 229 563 240V271H412V240C412 229 421 220 432 220Z" fill="#F9FBFF"/>
+                    <path d="M449 199C450 189 459 183 469 185L528 199C540 202 547 214 544 226L537 253L436 228L449 199Z" fill="url(#paperBlue)"/>
+                    <path d="M466 203L522 216M462 219L526 234M459 235L514 248" stroke="#D4DDF6" stroke-width="3" stroke-linecap="round"/>
+                    <rect x="438" y="279" width="78" height="15" rx="4" fill="#8EA0EA"/>
+                    <path d="M415 330H566L555 356H425L415 330Z" fill="#F9FBFF" stroke="#C7D2F3" stroke-width="2"/>
+                    <rect x="456" y="346" width="66" height="3" rx="1.5" fill="#C1CCEC"/>
+
+                    <g transform="translate(340 300) rotate(-17 56 47)">
+                        <rect x="8" y="10" width="82" height="116" rx="14" fill="#F8FBFF" stroke="#C7D2F3" stroke-width="2"/>
+                        <rect x="18" y="26" width="62" height="78" rx="6" fill="#EEF3FF"/>
+                        <path d="M25 36H71M25 49H63M25 62H68" stroke="#DDE5F4" stroke-width="4" stroke-linecap="round"/>
+                        <rect x="44" y="84" width="27" height="14" rx="3" fill="#2456EF"/>
+                        <circle cx="49" cy="114" r="3" fill="#CED8F4"/>
+                    </g>
+                </svg>
+            </div>
+
+            <div class="feature-row" aria-label="Retail Billing benefits">
+                <div class="feature-item">
+                    <div class="feature-icon" aria-hidden="true">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            <path d="m9 12 2 2 4-5"/>
+                        </svg>
+                    </div>
+                    <div class="feature-copy">
+                        <strong>Secure &amp; Reliable</strong>
+                        <span>Your data is safe with us</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon" aria-hidden="true">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M13 2 3 14h8l-1 8 11-14h-8l0-6z"/>
+                        </svg>
+                    </div>
+                    <div class="feature-copy">
+                        <strong>Fast &amp; Efficient</strong>
+                        <span>Streamline your billing process</span>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon" aria-hidden="true">
+                        <svg class="icon-svg" viewBox="0 0 24 24">
+                            <path d="M4 20h16"/>
+                            <path d="M7 20V10"/>
+                            <path d="M12 20V4"/>
+                            <path d="M17 20v-7"/>
+                        </svg>
+                    </div>
+                    <div class="feature-copy">
+                        <strong>Insightful Reports</strong>
+                        <span>Make better decisions with real-time data</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="login-card">
+                <div class="login-card-heading">
+					<span class="auth-eyebrow">Welcome back</span>
+					<h1>Welcome Back</h1>
+                    <p>Sign in to continue to Retail Billing</p>
+                </div>
+
+                <form class="login-form" id="store-login-form">
+                    <div class="form-field">
+                        <label for="login_email">Email / Username</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg class="icon-svg" viewBox="0 0 24 24">
+                                    <path d="M20 21a8 8 0 0 0-16 0"/>
+                                    <circle cx="12" cy="7" r="4"/>
+                                </svg>
+                            </span>
+                            <input id="login_email" name="login_email" type="text" placeholder="Enter your email or username" autocomplete="username" required>
+                        </div>
+                    </div>
+
+                    <div class="form-field password-row">
+                        <label for="login_password">Password</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">
+                                <svg class="icon-svg" viewBox="0 0 24 24">
+                                    <rect x="4" y="11" width="16" height="10" rx="2"/>
+                                    <path d="M8 11V7a4 4 0 0 1 8 0v4"/>
+                                </svg>
+                            </span>
+                            <input id="login_password" name="login_password" type="password" placeholder="Enter your password" autocomplete="current-password" required>
+                            <button class="toggle-password" id="toggle-password" type="button" onclick="togglePasswordVisibility()" aria-label="Show password">
+                                <svg class="icon-svg eye-on" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="icon-svg eye-off" viewBox="0 0 24 24" aria-hidden="true" hidden>
+                                    <path d="m2 2 20 20"/>
+                                    <path d="M10.6 10.6A3 3 0 0 0 12 15a3 3 0 0 0 2.4-1.2"/>
+                                    <path d="M8.3 5.4A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a17.2 17.2 0 0 1-2.1 3.1"/>
+                                    <path d="M6.6 6.6C3.7 8.5 2 12 2 12s3.5 7 10 7a10.8 10.8 0 0 0 5.4-1.5"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="remember-row">
+                        <label>
+                            <input type="checkbox" checked>
+                            Remember me
+                        </label>
+                        <a href="/store-login/forgot-password">Forgot Password?</a>
+                    </div>
+                    <div class="remember-row" style="margin-top:-.25rem;justify-content:flex-start;">
+                        <label for="login_with_otp" style="cursor:pointer;">
+                            <input id="login_with_otp" type="checkbox">
+                            Login with OTP
+                        </label>
+                    </div>
+                    <div class="message-container" id="login-message" role="status" aria-live="polite" style="display: none;">
+                      <span class="icon" id="message-icon"></span>
+                    </div>
+
+                    <button class="btn-submit" type="submit">Sign In</button>
+                </form>
+                <section class="login-form" id="store-otp-choice" hidden>
+                    <div class="login-card-heading" style="margin-bottom:1.35rem;">
+                        <span class="auth-eyebrow">Security check</span>
+                        <h1>Verify your identity</h1>
+                        <p>Choose where you want to receive your one-time code.</p>
+                    </div>
+                    <div style="display:grid;gap:.85rem;">
+                        <button class="btn-submit otp-choice-button" id="send-email-otp" type="button" style="display:flex;align-items:center;justify-content:flex-start;gap:.8rem;padding:0 1.15rem;">✉ <span>Send code to email<br><small id="masked-email" style="font-weight:400;opacity:.82;"></small></span></button>
+                        <button class="btn-submit otp-choice-button" id="send-mobile-otp" type="button" style="display:flex;align-items:center;justify-content:flex-start;gap:.8rem;padding:0 1.15rem;">▣ <span>Send code to mobile<br><small id="masked-mobile" style="font-weight:400;opacity:.82;"></small></span></button>
+                    </div>
+                    <div class="message-container" id="choice-message" role="status" aria-live="polite" style="display:none;"></div>
+                    <button id="choice-back-button" type="button" style="display:block;margin:1rem auto 0;border:0;background:none;color:#526075;cursor:pointer;">← Back to login</button>
+                </section>
+                <form class="login-form" id="store-otp-form" hidden>
+                    <div class="login-card-heading" style="margin-bottom:1.2rem;">
+                        <span class="auth-eyebrow">Identity verification</span>
+                        <h1>Enter OTP</h1>
+                        <p id="otp-prompt">Enter the verification code sent to your mobile.</p>
+                    </div>
+                    <div class="form-field">
+                        <label for="login_otp">6-digit verification code</label>
+                        <div class="input-shell">
+                            <span class="input-icon" aria-hidden="true">#</span>
+                            <input id="login_otp" name="otp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" placeholder="Enter OTP" required style="letter-spacing:.3rem;font-weight:750;">
+                        </div>
+                    </div>
+                    <div class="message-container" id="otp-message" role="status" aria-live="polite" style="display:none;"></div>
+                    <button class="btn-submit" id="verify-otp-button" type="submit">Verify &amp; Sign In</button>
+                    <div style="display:flex;justify-content:space-between;margin-top:1rem;font-size:.78rem;">
+                        <button id="change-login-button" type="button" style="border:0;background:none;color:#526075;cursor:pointer;">← Change login</button>
+                        <button id="resend-otp-button" type="button" style="border:0;background:none;color:#07883f;font-weight:700;cursor:pointer;">Resend OTP</button>
+                    </div>
+                </form>
+                <p style="margin:1rem 0 0;text-align:center;color:#667085;font-size:.82rem;">New to My Sales? <a href="/store-signup" style="color:#07883f;font-weight:700;text-decoration:none;">Create your store</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block script %}
+<script>
+const redirectTo = '/pos';
+let otpTemporaryId = '';
+let selectedOtpDelivery = '';
+
+function sanitizeRedirect(path) {
+    if (!path) return '/pos';
+    try {
+        const url = new URL(path, window.location.origin);
+        if (url.origin !== window.location.origin) return '/pos';
+        return url.pathname + url.search + url.hash || '/pos';
+    } catch (e) {
+        return '/pos';
+    }
+}
+
+function togglePasswordVisibility() {
+    const toggle = document.getElementById('toggle-password');
+    const password = document.getElementById('login_password');
+    const eyeOn = toggle.querySelector('.eye-on');
+    const eyeOff = toggle.querySelector('.eye-off');
+
+    if (password.type === 'password') {
+        password.type = 'text';
+        toggle.setAttribute('aria-label', 'Hide password');
+        eyeOn.hidden = true;
+        eyeOff.hidden = false;
+    } else {
+        password.type = 'password';
+        toggle.setAttribute('aria-label', 'Show password');
+        eyeOn.hidden = false;
+        eyeOff.hidden = true;
+    }
+}
+
+function submitLogin(event) {
+    event.preventDefault();
+
+    const messageEl = document.getElementById('login-message');
+    const submitBtn = document.querySelector('.btn-submit');
+
+    messageEl.style.display = 'none';
+    messageEl.className = 'message-container';
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in...';
+
+    const email = document.getElementById('login_email').value.trim();
+    const password = document.getElementById('login_password').value;
+
+    if (!email || !password) {
+        showMessage('Please enter both email/username and password.', 'error');
+        resetButton(submitBtn);
+        return;
+    }
+
+    if (!document.getElementById('login_with_otp').checked) {
+        performPasswordLogin(email, password, submitBtn);
+        return;
+    }
+
+    fetch('/api/method/store_management.otp_auth.begin_otp_login', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+        credentials: 'same-origin',
+        body: JSON.stringify({email, password})
+    })
+    .then(async res => {
+        const data = await res.json();
+        if (!res.ok || data.exc) throw new Error('Invalid credentials');
+        return data;
+    })
+    .then(data => {
+        resetButton(submitBtn);
+        const details = data.message;
+        otpTemporaryId = details.challenge_id;
+        document.getElementById('masked-email').textContent = details.masked_email || 'Not available';
+        document.getElementById('masked-mobile').textContent = details.masked_mobile || 'Not available';
+        document.getElementById('send-email-otp').disabled = !details.email_available;
+        document.getElementById('send-mobile-otp').disabled = !details.mobile_available;
+        document.getElementById('store-login-form').hidden = true;
+        document.getElementById('store-otp-choice').hidden = false;
+    })
+    .catch(() => {
+        resetButton(submitBtn);
+        showLoginFailure(email);
+    });
+}
+
+function performPasswordLogin(email, password, submitBtn) {
+    fetch('/api/method/store_management.otp_auth.password_login', {
+        method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, credentials:'same-origin',
+        body:JSON.stringify({email, password})
+    })
+    .then(async response => { const data = await response.json(); if (!response.ok || data.exc) throw new Error('Login failed'); return data; })
+    .then(data => {
+        if (data.message && data.message.status === 'Logged In') {
+            window.location.href = sanitizeRedirect(redirectTo);
+            return;
+        }
+        throw new Error('Login failed');
+    })
+    .catch(() => { resetButton(submitBtn); showLoginFailure(email); });
+}
+
+async function chooseOtpDelivery(delivery) {
+    const message = document.getElementById('choice-message');
+    const buttons = document.querySelectorAll('.otp-choice-button');
+    buttons.forEach(button => button.disabled = true);
+    message.style.display = 'none';
+    try {
+        const response = await fetch('/api/method/store_management.otp_auth.send_login_otp', {
+            method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, credentials:'same-origin',
+            body:JSON.stringify({challenge_id:otpTemporaryId, delivery})
+        });
+        const data = await response.json();
+        if (!response.ok || data.exc) {
+            let text = 'Unable to send OTP. Please try another option.';
+            if (data._server_messages) {
+                try { text = JSON.parse(data._server_messages).map(JSON.parse).map(row => row.message).join(' '); } catch (error) {}
+            }
+            throw new Error(text);
+        }
+        selectedOtpDelivery = delivery;
+        document.getElementById('otp-prompt').textContent = `Enter the 6-digit code sent to ${data.message.masked_destination}.`;
+        document.getElementById('store-otp-choice').hidden = true;
+        document.getElementById('store-otp-form').hidden = false;
+        document.getElementById('login_otp').value = '';
+        document.getElementById('login_otp').focus();
+    } catch (error) {
+        message.textContent = error.message;
+        message.className = 'message-container error show';
+        message.style.display = 'block';
+    } finally { buttons.forEach(button => button.disabled = false); }
+}
+
+function submitOtp(event) {
+    event.preventDefault();
+    const otp = document.getElementById('login_otp').value.trim();
+    const button = document.getElementById('verify-otp-button');
+    const message = document.getElementById('otp-message');
+    if (!/^\d{6}$/.test(otp)) {
+        message.textContent = 'Enter the 6-digit OTP.';
+        message.className = 'message-container error show';
+        message.style.display = 'block';
+        return;
+    }
+    button.disabled = true;
+    button.textContent = 'Verifying...';
+    fetch('/api/method/store_management.otp_auth.verify_login_otp', {method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, credentials:'same-origin', body:JSON.stringify({challenge_id:otpTemporaryId, otp})})
+        .then(async response => { const data = await response.json(); if (!response.ok || data.exc) throw new Error('Incorrect or expired OTP.'); return data; })
+        .then(data => {
+            if (data.message && data.message.status === 'Logged In') {
+                window.location.href = sanitizeRedirect(redirectTo);
+                return;
+            }
+            throw new Error('Incorrect or expired OTP.');
+        })
+        .catch(error => {
+            message.textContent = error.message || 'OTP verification failed.';
+            message.className = 'message-container error show';
+            message.style.display = 'block';
+        })
+        .finally(() => { button.disabled = false; button.textContent = 'Verify & Sign In'; });
+}
+
+function returnToLogin() {
+    otpTemporaryId = '';
+    selectedOtpDelivery = '';
+    document.getElementById('store-otp-form').hidden = true;
+    document.getElementById('store-otp-choice').hidden = true;
+    document.getElementById('store-login-form').hidden = false;
+}
+
+function resendOtp() {
+    if (!selectedOtpDelivery) return;
+    document.getElementById('store-otp-form').hidden = true;
+    document.getElementById('store-otp-choice').hidden = false;
+    chooseOtpDelivery(selectedOtpDelivery);
+}
+
+async function showLoginFailure(email) {
+    try {
+        const response = await fetch(`/api/method/store_management.signup.get_trial_login_status?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        if (data.message && data.message.expired) {
+            showMessage(`Your 20-day free trial has ended. Please call or message ${data.message.contact} to continue using My Sales.`, 'error');
+            return;
+        }
+    } catch (error) {
+        // Fall through to the standard authentication message.
+    }
+    showMessage('Invalid username or password.', 'error');
+    shakeInputs();
+}
+
+function showMessage(text, type) {
+    const messageEl = document.getElementById('login-message');
+
+    let iconSVG = '';
+    if (type === 'success') {
+        iconSVG = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="m9 12 2 2 4-5"/></svg>';
+    } else if (type === 'error') {
+        iconSVG = '<svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>';
+    }
+
+    messageEl.innerHTML = `<span class="icon">${iconSVG}</span><span>${text}</span>
+        <button class="close-btn" onclick="this.parentElement.style.display='none'">&times;</button>`;
+
+    messageEl.className = `message-container ${type} show`;
+    messageEl.style.display = 'block';
+}
+
+function resetButton(btn) {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+}
+
+function shakeInputs() {
+    const inputs = document.querySelectorAll('.form-field input');
+
+    inputs.forEach(input => {
+        const icon = input.parentElement.querySelector('.input-icon');
+        input.style.borderColor = '#ef4444';
+        if (icon) icon.style.color = '#ef4444';
+        input.style.transform = 'translateX(-0.2rem)';
+
+        setTimeout(() => input.style.transform = 'translateX(0.2rem)', 100);
+        setTimeout(() => input.style.transform = 'translateX(0)', 200);
+
+        setTimeout(() => {
+            input.style.borderColor = '';
+            if (icon) icon.style.color = '';
+        }, 400);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('store-login-form');
+    if (form) {
+        form.addEventListener('submit', submitLogin);
+    }
+    document.getElementById('store-otp-form')?.addEventListener('submit', submitOtp);
+    document.getElementById('change-login-button')?.addEventListener('click', returnToLogin);
+    document.getElementById('resend-otp-button')?.addEventListener('click', resendOtp);
+    document.getElementById('choice-back-button')?.addEventListener('click', returnToLogin);
+    document.getElementById('send-email-otp')?.addEventListener('click', () => chooseOtpDelivery('email'));
+    document.getElementById('send-mobile-otp')?.addEventListener('click', () => chooseOtpDelivery('mobile'));
+});
+</script>
+{% endblock %}

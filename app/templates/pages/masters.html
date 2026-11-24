@@ -1,0 +1,1661 @@
+	{% extends "base.html" %}
+
+{% block header %}{% endblock %}
+{% block navbar %}{% endblock %}
+
+{% block head_include %}
+<link rel="stylesheet" href="/assets/store_management/css/store_management_ui.css?v=20260911-1">
+<link rel="stylesheet" href="/assets/store_management/css/my_sales_mobile.css?v=20261007-1">
+<link rel="manifest" href="/assets/store_management/my-sales.webmanifest?v=20260818-3">
+<meta name="theme-color" content="#146c43">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="My Sales">
+<script defer src="/assets/store_management/js/my_sales_mobile.js?v=20261012-7"></script>
+<link rel="stylesheet" href="/assets/store_management/css/my_sales_design.css?v=20261007-4">
+<script defer src="/assets/store_management/js/my_sales_reference.js?v=20261012-2"></script>
+<link rel="stylesheet" href="/assets/store_management/css/my_sales_phone.css?v=20261012-7">
+<script defer src="/assets/store_management/js/my_sales_phone.js?v=20261012-7"></script>
+{% endblock %}
+
+{% block page_content %}
+{% if frappe.session.user == 'Guest' %}
+	<script>window.location.href = '/login?redirect-to=/masters';</script>
+{% else %}
+<div class="sm-page-app sm-masters-app" id="sm-masters-app">
+	<!-- Top Navigation -->
+	<div class="sm-top-nav">
+		<a class="sm-brand-lockup" href="/pos" aria-label="My Sales home">
+			<img class="sm-brand-mark" src="/api/method/store_management.api.get_brand_asset?name=my-sales-logo.svg" alt=""><span><strong>My Sales</strong><small>Retail Billing</small></span>
+		</a>
+		<nav class="sm-nav-primary" aria-label="Main navigation">
+			<a href="/masters" class="sm-nav-link active" aria-current="page">Masters</a>
+			<a href="/pos" class="sm-nav-link">POS</a>
+			<a href="/reports" class="sm-nav-link">Reports</a>
+		</nav>
+		<div class="sm-user-chip" title="Signed in user"><span class="sm-user-dot"></span>{{ frappe.session.user }}</div>
+	</div>
+
+	<section class="sm-masters-shell">
+		<!-- Sidebar Navigation -->
+		<aside class="sm-masters-sidebar">
+			<div class="sm-sidebar-header">
+				<h2>Masters</h2>
+				<p>Manage Core Data</p>
+			</div>
+			<nav class="sm-masters-nav">
+				<button class="sm-nav-item active" data-doctype="Item" onclick="selectDoctype('Item')">
+					📦 Items
+				</button>
+				<button class="sm-nav-item" data-doctype="Item Group" onclick="selectDoctype('Item Group')">
+					📂 Item Groups
+				</button>
+				<button class="sm-nav-item" data-doctype="Customer" onclick="selectDoctype('Customer')">
+					👤 Customers
+				</button>
+				<button class="sm-nav-item" data-doctype="Customer Group" onclick="selectDoctype('Customer Group')">
+					👥 Customer Groups
+				</button>
+				<button class="sm-nav-item" data-doctype="Item Tax Template" onclick="selectDoctype('Item Tax Template')">
+					🏷️ Tax Templates
+				</button>
+				<button class="sm-nav-item" data-doctype="Expense" onclick="selectDoctype('Expense')">
+					🧾 Expenses
+				</button>
+				<button class="sm-nav-item" data-doctype="Company" onclick="selectDoctype('Company')">
+					🏢 Companies
+				</button>
+				<button class="sm-nav-item" data-doctype="User" onclick="selectDoctype('User')">
+					👨‍💼 Users
+				</button>
+			</nav>
+		</aside>
+
+<!-- Main Content -->
+		<main class="sm-masters-content">
+			<div class="sm-masters-toolbar">
+				<div>
+					<h1 id="doctype-title">Items</h1>
+					<p id="doctype-desc">Manage product items</p>
+				</div>
+				<div class="sm-toolbar-actions">
+					<div class="sm-search-box">
+						<input 
+							type="text" 
+							id="search-input" 
+							class="sm-search-input" 
+							placeholder="Search..." 
+							oninput="handleSearch(this.value)"
+						>
+						<span class="sm-search-icon">🔍</span>
+					</div>
+					<div class="sm-item-list-filters"><select id="master-item-group" aria-label="Item group" onchange="renderList()"><option value="">All Item Groups</option></select><select id="master-item-status" aria-label="Item status" onchange="renderList()"><option value="">All Statuses</option><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+					<button class="sm-masters-btn sm-btn-primary" onclick="openCreateForm()">
+						+ New Record
+					</button>
+				</div>
+			</div>
+
+			<!-- List View -->
+			<div class="sm-masters-list" id="masters-list"></div>
+		</main>
+	</section>
+
+	<!-- Modal Overlay -->
+	<div class="sm-masters-modal-backdrop" id="modal-backdrop" onclick="closeModal()"></div>
+
+	<!-- Create/Edit Modal -->
+	<div class="sm-masters-modal" id="masters-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true">
+		<div class="sm-modal-header">
+			<h2 id="modal-title">New Record</h2>
+			<button class="sm-modal-close" type="button" onclick="closeModal()" aria-label="Close dialog">✕</button>
+		</div>
+		<div class="sm-modal-body" id="modal-form-container"></div>
+		<div class="sm-modal-footer">
+			<button class="sm-masters-btn sm-btn-secondary" onclick="closeModal()">Cancel</button>
+			<button class="sm-masters-btn sm-btn-primary" onclick="saveRecord()">Save</button>
+		</div>
+	</div>
+</div>
+
+<style>
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap");
+
+:root {
+	--sm-primary: #2563eb;
+	--sm-primary-dark: #1d4ed8;
+	--sm-success: #16a34a;
+	--sm-danger: #dc2626;
+	--sm-bg: #f8fafc;
+	--sm-surface: #ffffff;
+	--sm-border: rgba(15, 23, 42, 0.1);
+	--sm-text: #1e293b;
+	--sm-muted: #64748b;
+	--sm-shadow: 0 4px 6px rgba(15, 23, 42, 0.1);
+}
+
+body.store-masters-page {
+	background: var(--sm-bg);
+	font-family: "Manrope", sans-serif;
+	color: var(--sm-text);
+}
+
+/* Top Navigation */
+.sm-top-nav {
+	display: flex;
+	gap: 0.5rem;
+	padding: 1rem 2rem;
+	background: white;
+	border-bottom: 1px solid rgba(15, 23, 42, 0.1);
+}
+
+.sm-nav-link {
+	padding: 0.6rem 1rem;
+	border-radius: 8px;
+	text-decoration: none;
+	color: #64748b;
+	font-weight: 600;
+	font-size: 0.95rem;
+	transition: all 0.2s ease;
+}
+
+.sm-nav-link:hover {
+	background: #f1f5f9;
+	color: #1e293b;
+}
+
+.sm-nav-link.active {
+	background: #eff6ff;
+	color: #2563eb;
+}
+
+
+.sm-page-app {
+	min-height: calc(100vh - 4rem);
+	padding: 2rem 0 3rem;
+}
+
+.sm-masters-app {
+	/* page-specific wrapper hook */
+}
+
+
+.sm-page-shell {
+	width: min(100%, calc(100vw - 2rem));
+	margin: 0 auto 0 1rem;
+	display: grid;
+	gap: 1rem;
+}
+
+
+.sm-masters-shell {
+	width: min(100%, calc(100vw - 2rem));
+	margin: 0 auto 0 1rem;
+	display: grid;
+	grid-template-columns: minmax(260px, 320px) 1fr;
+	gap: 1rem;
+	align-items: start;
+}
+
+
+.sm-masters-sidebar {
+	background: var(--sm-surface);
+	border-right: 1px solid var(--sm-border);
+	padding: 2rem 1.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	overflow-y: auto;
+}
+
+.sm-sidebar-header h2 {
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: 800;
+}
+
+.sm-sidebar-header p {
+	margin: 0.3rem 0 0;
+	color: var(--sm-muted);
+	font-size: 0.9rem;
+}
+
+.sm-masters-nav {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.sm-nav-item {
+	padding: 0.75rem 1rem;
+	border: 0;
+	background: transparent;
+	color: var(--sm-text);
+	border-radius: 12px;
+	cursor: pointer;
+	font-size: 1rem;
+	font-weight: 600;
+	text-align: left;
+	transition: all 0.2s ease;
+}
+
+.sm-nav-item:hover {
+	background: rgba(37, 99, 235, 0.1);
+	color: var(--sm-primary);
+}
+
+.sm-nav-item.active {
+	background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+	color: var(--sm-primary);
+	font-weight: 800;
+}
+
+.sm-masters-content {
+	padding: 2rem;
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+	overflow-y: auto;
+}
+
+.sm-masters-toolbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding-bottom: 1rem;
+	border-bottom: 1px solid var(--sm-border);
+}
+
+.sm-toolbar-actions {
+	display: flex;
+	gap: 1rem;
+	align-items: center;
+}
+
+.sm-search-box {
+	position: relative;
+	display: flex;
+	align-items: center;
+}
+
+.sm-search-input {
+	padding: 0.6rem 1rem 0.6rem 2.5rem;
+	border: 1px solid var(--sm-border);
+	border-radius: 10px;
+	font-size: 0.95rem;
+	font-family: inherit;
+	width: 220px;
+	transition: all 0.2s ease;
+}
+
+.sm-search-input:focus {
+	outline: 0;
+	border-color: var(--sm-primary);
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+	width: 280px;
+}
+
+.sm-search-icon {
+	position: absolute;
+	left: 0.75rem;
+	font-size: 0.9rem;
+	pointer-events: none;
+}
+
+.sm-masters-toolbar h1 {
+	margin: 0;
+	font-size: 2rem;
+	font-weight: 800;
+}
+
+.sm-masters-toolbar p {
+	margin: 0.3rem 0 0;
+	color: var(--sm-muted);
+	font-size: 0.95rem;
+}
+
+.sm-masters-btn {
+	padding: 0.75rem 1.25rem;
+	border: 0;
+	border-radius: 10px;
+	cursor: pointer;
+	font-size: 1rem;
+	font-weight: 700;
+	transition: all 0.2s ease;
+}
+
+.sm-btn-primary {
+	background: linear-gradient(135deg, var(--sm-primary), var(--sm-primary-dark));
+	color: white;
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.sm-btn-primary:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 16px rgba(37, 99, 235, 0.4);
+}
+
+.sm-btn-secondary {
+	background: var(--sm-bg);
+	color: var(--sm-text);
+	border: 1px solid var(--sm-border);
+}
+
+.sm-btn-secondary:hover {
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.sm-btn-danger {
+	background: var(--sm-danger);
+	color: white;
+}
+
+.sm-btn-danger:hover {
+	opacity: 0.9;
+}
+
+.sm-btn-small {
+	padding: 0.5rem 0.75rem;
+	font-size: 0.9rem;
+}
+
+.sm-masters-list {
+	display: grid;
+	gap: 1rem;
+}
+
+.sm-list-table {
+	background: var(--sm-surface);
+	border: 1px solid var(--sm-border);
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.sm-table-head {
+	display: grid;
+	gap: 1rem;
+	padding: 1rem;
+	background: rgba(248, 250, 252, 0.5);
+	border-bottom: 1px solid var(--sm-border);
+	font-weight: 700;
+	font-size: 0.9rem;
+	color: var(--sm-muted);
+	grid-template-columns: repeat(3, 1fr) 180px;
+}
+
+.sm-table-row {
+	display: grid;
+	gap: 1rem;
+	padding: 1rem;
+	align-items: center;
+	border-bottom: 1px solid var(--sm-border);
+	transition: background 0.2s ease;
+	grid-template-columns: repeat(3, 1fr) 180px;
+}
+
+.sm-table-row:hover {
+	background: rgba(248, 250, 252, 0.5);
+}
+
+.sm-table-row:last-child {
+	border-bottom: 0;
+}
+
+.sm-table-cell {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.sm-table-actions {
+	display: flex;
+	gap: 0.5rem;
+	justify-content: flex-start;
+	align-items: center;
+}
+
+.sm-action-btn {
+	padding: 0.5rem 0.75rem;
+	border: 1px solid var(--sm-border);
+	background: var(--sm-surface);
+	color: var(--sm-text);
+	border-radius: 8px;
+	cursor: pointer;
+	font-size: 0.9rem;
+	font-weight: 600;
+	transition: all 0.2s ease;
+}
+
+.sm-action-btn:hover {
+	background: var(--sm-bg);
+	border-color: var(--sm-primary);
+	color: var(--sm-primary);
+}
+
+.sm-action-btn.delete:hover {
+	border-color: var(--sm-danger);
+	color: var(--sm-danger);
+}
+
+.sm-empty-message {
+	text-align: center;
+	padding: 3rem 2rem;
+	background: var(--sm-surface);
+	border: 1px dashed var(--sm-border);
+	border-radius: 12px;
+}
+
+.sm-empty-message strong {
+	display: block;
+	margin-bottom: 0.5rem;
+	font-size: 1.1rem;
+}
+
+.sm-empty-message p {
+	color: var(--sm-muted);
+	margin: 0;
+}
+
+/* Modal Styles */
+.sm-masters-modal-backdrop {
+	position: fixed;
+	inset: 0;
+	background: rgba(15, 23, 42, 0.4);
+	backdrop-filter: blur(4px);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+	z-index: 99;
+}
+
+.sm-masters-modal-backdrop.open {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.sm-masters-modal {
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%) scale(0.95);
+	width: min(600px, 90vw);
+	max-height: 85vh;
+	background: var(--sm-surface);
+	border-radius: 16px;
+	box-shadow: 0 20px 60px rgba(15, 23, 42, 0.3);
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	gap: 0;
+	opacity: 0;
+	pointer-events: none;
+	transition: all 0.2s ease;
+	z-index: 100;
+}
+
+.sm-masters-modal.open {
+	transform: translate(-50%, -50%) scale(1);
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.sm-modal-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 1.5rem;
+	border-bottom: 1px solid var(--sm-border);
+}
+
+.sm-modal-header h2 {
+	margin: 0;
+	font-size: 1.3rem;
+	font-weight: 800;
+}
+
+.sm-modal-close {
+	background: transparent;
+	border: 0;
+	font-size: 1.5rem;
+	cursor: pointer;
+	color: var(--sm-muted);
+	transition: color 0.2s ease;
+}
+
+.sm-modal-close:hover {
+	color: var(--sm-text);
+}
+
+.sm-modal-body {
+	padding: 1.5rem;
+	overflow-y: auto;
+}
+
+.sm-form-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.4rem;
+}
+
+.sm-form-label {
+	font-weight: 700;
+	font-size: 0.95rem;
+	color: var(--sm-text);
+}
+
+.sm-form-label .required {
+	color: var(--sm-danger);
+	margin-left: 2px;
+}
+
+.sm-form-input,
+.sm-form-select,
+.sm-form-textarea {
+	padding: 0.75rem;
+	border: 1px solid var(--sm-border);
+	border-radius: 8px;
+	font-size: 1rem;
+	font-family: inherit;
+	transition: all 0.2s ease;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.sm-form-input:focus,
+.sm-form-select:focus,
+.sm-form-textarea:focus {
+	outline: 0;
+	border-color: var(--sm-primary);
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sm-form-input[type="number"],
+.sm-form-input[type="currency"] {
+	text-align: left;
+}
+
+.sm-form-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	cursor: pointer;
+}
+
+.sm-form-checkbox input {
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+}
+
+.sm-image-field {
+	display: grid;
+	gap: 0.75rem;
+}
+
+.sm-image-preview {
+	width: 100%;
+	min-height: 180px;
+	border: 1px dashed var(--sm-border);
+	border-radius: 12px;
+	background: #f8fafc;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.sm-image-preview img {
+	width: 100%;
+	max-height: 240px;
+	object-fit: contain;
+	display: block;
+}
+
+.sm-image-placeholder {
+	color: var(--sm-muted);
+	font-size: 0.95rem;
+}
+
+.sm-image-actions {
+	display: flex;
+	gap: 0.75rem;
+	flex-wrap: wrap;
+}
+
+.sm-image-btn {
+	padding: 0.65rem 1rem;
+	border: 1px solid var(--sm-border);
+	border-radius: 8px;
+	background: var(--sm-surface);
+	color: var(--sm-text);
+	font-size: 0.92rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+
+.sm-image-btn:hover {
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.sm-form-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	margin-bottom: 0.5rem;
+}
+
+.sm-form-row .sm-form-group {
+	flex: 1;
+	min-width: 200px;
+}
+
+.sm-form-row .sm-form-group.full-width {
+	flex: 1 1 100%;
+	min-width: 100%;
+}
+
+.sm-link-input {
+	position: relative;
+}
+
+.sm-link-btn {
+	padding: 0.75rem;
+	border: 1px solid var(--sm-border);
+	border-radius: 8px;
+	background: var(--sm-surface);
+	cursor: pointer;
+	text-align: left;
+	min-height: 46px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	transition: all 0.2s ease;
+}
+
+.sm-link-btn:hover {
+	border-color: var(--sm-primary);
+}
+
+.sm-link-btn .sm-link-value {
+	flex: 1;
+	color: var(--sm-text);
+}
+
+.sm-link-btn .sm-link-placeholder {
+	color: var(--sm-muted);
+}
+
+.sm-link-dropdown {
+	position: absolute;
+	top: 100%;
+	left: 0;
+	right: 0;
+	background: var(--sm-surface);
+	border: 1px solid var(--sm-primary);
+	border-top: 0;
+	border-radius: 0 0 8px 8px;
+	max-height: 200px;
+	overflow-y: auto;
+	z-index: 10;
+	display: none;
+}
+
+.sm-link-dropdown.open {
+	display: block;
+}
+
+.sm-link-search {
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--sm-border);
+	background: var(--sm-surface);
+	position: sticky;
+	top: 0;
+	z-index: 1;
+}
+
+.sm-link-search-input {
+	width: 100%;
+	padding: 0.65rem 0.75rem;
+	border: 1px solid var(--sm-border);
+	border-radius: 8px;
+	background: #fff;
+	color: var(--sm-text);
+	font-size: 0.92rem;
+}
+
+.sm-link-search-input:focus {
+	outline: 0;
+	border-color: var(--sm-primary);
+	box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.sm-link-options {
+	max-height: 150px;
+	overflow-y: auto;
+}
+
+/* Multi-select Styles */
+.sm-multiselect-container {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.sm-multiselect-search {
+	padding-bottom: 0.5rem;
+}
+
+.sm-multiselect-search .sm-form-input {
+	width: 100%;
+}
+
+.sm-multiselect-options {
+	max-height: 150px;
+	overflow-y: auto;
+	border: 1px solid var(--sm-border);
+	border-radius: 8px;
+	padding: 0.5rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.25rem;
+}
+
+.sm-multiselect-checkbox {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem;
+	border-radius: 6px;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.sm-multiselect-checkbox:hover {
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.sm-multiselect-checkbox input {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.sm-multiselect-checkbox span {
+	font-size: 0.95rem;
+}
+
+.sm-link-option {
+	padding: 0.75rem 1rem;
+	cursor: pointer;
+	transition: background 0.2s ease;
+}
+
+.sm-link-option:hover {
+	background: rgba(37, 99, 235, 0.1);
+}
+
+.sm-form-textarea {
+	resize: vertical;
+	min-height: 80px;
+}
+
+.sm-modal-footer {
+	display: flex;
+	gap: 1rem;
+	justify-content: flex-end;
+	padding: 1.5rem;
+	border-top: 1px solid var(--sm-border);
+}
+
+.sm-modal-footer .sm-masters-btn {
+	min-width: 120px;
+}
+
+@media (max-width: 768px) {
+	.sm-masters-shell {
+		grid-template-columns: 1fr;
+	}
+
+	.sm-masters-sidebar {
+		display: none;
+	}
+
+	.sm-table-head,
+	.sm-table-row {
+		grid-template-columns: 1fr;
+	}
+
+	.sm-masters-modal {
+		width: 95vw;
+	}
+
+	.sm-masters-toolbar {
+		flex-direction: column;
+		gap: 1rem;
+		align-items: flex-start;
+	}
+}
+</style>
+
+<script>
+const mastersDoctypes = {
+	'Item': {
+		title: 'Items',
+		desc: 'Manage product items',
+		fields: ['name', 'item_name', 'item_group'],
+		searchField: 'item_name',
+		defaults: {
+			item_group: 'All Item Groups',
+			stock_uom: 'Nos'
+		},
+		formFields: [
+			{ name: 'item_code', label: 'Item Code', type: 'text', required: true },
+			{ name: 'item_name', label: 'Item Name', type: 'text', required: true },
+			{ name: 'item_group', label: 'Item Group', type: 'link', doctype: 'Item Group', required: true },
+			{ name: 'stock_uom', label: 'UOM', type: 'link', doctype: 'UOM', required: true },
+			{ name: 'barcode', label: 'Barcode', type: 'text' },
+			{ name: 'is_stock_item', label: 'Is Stock Item', type: 'checkbox', fullWidth: true, checked: true },
+			{ name: 'opening_stock', label: 'Opening Stock', type: 'number' },
+			{ name: 'standard_rate', label: 'Standard Rate', type: 'currency' },
+			{ name: 'image', label: 'Item Image', type: 'image', fullWidth: true }
+		]
+	},
+	'Item Group': {
+		title: 'Item Groups',
+		desc: 'Manage item categories',
+		fields: ['name', 'item_group_name', 'parent_item_group'],
+		formFields: [
+			{ name: 'item_group_name', label: 'Item Group Name', type: 'text', required: true, fullWidth: true },
+			{ name: 'parent_item_group', label: 'Parent Item Group', type: 'link', doctype: 'Item Group' },
+			{ name: 'is_group', label: 'Is Group', type: 'checkbox' },
+			{ name: 'image', label: 'Item Group Image', type: 'image', fullWidth: true }
+		]
+	},
+	'Customer': {
+		title: 'Customers',
+		desc: 'Manage customer records',
+		fields: ['name', 'customer_name', 'customer_group','customer_type','territory'],
+		formFields: [
+			{ name: 'customer_name', label: 'Customer Name', type: 'text', required: true, fullWidth: true },
+			{ name: 'customer_type', label: 'Customer Type', type: 'select', options: ['Company', 'Individual', 'Partnership'], required: true },
+			{ name: 'customer_group', label: 'Customer Group', type: 'link', doctype: 'Customer Group', required: true },
+			{ name: 'territory', label: 'Territory', type: 'link', doctype: 'Territory', required: true },
+			{ name: 'mobile_no', label: 'Mobile Number', type: 'text' },
+			{ name: 'tax_id', label: 'Tax ID / GSTIN', type: 'text' },
+			{ name: 'disabled', label: 'Disabled', type: 'checkbox', fullWidth: true }
+		]
+	},
+	'Customer Group': {
+		title: 'Customer Groups',
+		desc: 'Manage customer categories',
+		fields: ['name', 'customer_group_name', 'parent_customer_group'],
+		formFields: [
+			{ name: 'customer_group_name', label: 'Customer Group Name', type: 'text', required: true, fullWidth: true },
+			{ name: 'parent_customer_group', label: 'Parent Customer Group', type: 'link', doctype: 'Customer Group' },
+			{ name: 'is_group', label: 'Is Group', type: 'checkbox' }
+		]
+	},
+	'Item Tax Template': {
+		title: 'Tax Templates',
+		desc: 'Manage tax templates',
+		fields: ['name', 'title', 'company'],
+		formFields: [
+			{ name: 'title', label: 'Title', type: 'text', required: true, fullWidth: true },
+			{ name: 'company', label: 'Company', type: 'link', doctype: 'Company', required: true },
+			{ name: 'disabled', label: 'Disabled', type: 'checkbox' }
+		]
+	},
+	'Expense': {
+		title: 'Expenses',
+		desc: 'Record store purchases and running costs',
+		fields: ['name', 'posting_date', 'description', 'amount'],
+		searchField: 'description',
+		defaults: { posting_date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10) },
+		formFields: [
+			{ name: 'posting_date', label: 'Date', type: 'date', required: true },
+			{ name: 'amount', label: 'Amount', type: 'currency', required: true },
+			{ name: 'description', label: 'Description', type: 'text', required: true, fullWidth: true }
+		]
+	},
+	'Company': {
+		title: 'Companies',
+		desc: 'Manage companies',
+		defaults: { custom_application_language: 'en' },
+		fields: ['name', 'default_currency', 'country','company_name'],
+		formFields: [
+			{ name: 'company_name', label: 'Company Name', type: 'text', required: true, fullWidth: true },
+			{ name: 'abbr', label: 'Abbreviation', type: 'text', required: true },
+			{ name: 'default_currency', label: 'Default Currency', type: 'link', doctype: 'Currency', required: true },
+			{ name: 'country', label: 'Country', type: 'link', doctype: 'Country', required: true },
+			{ name: 'custom_application_language', label: 'Application Language', type: 'link', doctype: 'Language', required: true, fullWidth: true }
+		]
+	},
+'User': {
+		title: 'Users',
+		desc: 'Manage user accounts',
+		fields: ['name', 'full_name', 'email'],
+		formFields: [
+			{ name: 'email', label: 'Email', type: 'text', required: true, fullWidth: true },
+			{ name: 'first_name', label: 'First Name', type: 'text', required: true },
+			{ name: 'last_name', label: 'Last Name', type: 'text' },
+{ name: 'role_profiles', label: 'Role Profiles (Multi-select)', type: 'multiselect', doctype: 'Role Profile', fullWidth: true },
+			{ name: 'new_password', label: 'Set Password', type: 'text', fullWidth: true },
+			{ name: 'send_welcome_email', label: 'Send Welcome Email', type: 'checkbox', fullWidth: true }
+		]
+	}
+};
+
+let currentDoctype = 'Item';
+let currentRecords = [];
+let currentFormData = {};
+let editingRecord = null;
+let searchQuery = '';
+let linkOptionCache = {};
+
+frappe.ready(() => {
+	if (frappe.session.user === 'Guest') {
+		window.location.href = '/app/login';
+		return;
+	}
+
+	hideStoreProfileMenuItems();
+	document.addEventListener('click', handleOutsideDropdownClick);
+
+	const requestedDoctype = new URLSearchParams(window.location.search).get('doctype');
+	selectDoctype(mastersDoctypes[requestedDoctype] ? requestedDoctype : 'Item');
+});
+
+function hideStoreProfileMenuItems() {
+	const hiddenLabels = new Set(['My Account', 'Switch To Desk', 'Switch to Desk']);
+
+	const removeHiddenItems = () => {
+		document.querySelectorAll('.dropdown-menu a, .dropdown-menu button').forEach(item => {
+			const label = item.textContent.replace(/\s+/g, ' ').trim();
+			if (!hiddenLabels.has(label)) return;
+
+			const menu = item.closest('.dropdown-menu');
+			const menuRow = item.closest('li');
+			if (menuRow && menu?.contains(menuRow)) {
+				menuRow.remove();
+				return;
+			}
+
+			item.remove();
+		});
+	};
+
+	removeHiddenItems();
+
+	const observer = new MutationObserver(removeHiddenItems);
+	observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function selectDoctype(doctype) {
+	currentDoctype = doctype;
+	document.querySelector(".sm-item-list-filters").hidden = doctype !== "Item";
+	editingRecord = null;
+	currentFormData = {};
+	searchQuery = '';
+	document.getElementById('search-input').value = '';
+
+	// Update UI
+	document.querySelectorAll('.sm-nav-item').forEach(item => {
+		item.classList.toggle('active', item.dataset.doctype === doctype);
+	});
+
+	const config = mastersDoctypes[doctype];
+	document.getElementById('doctype-title').textContent = config.title;
+	document.getElementById('doctype-desc').textContent = config.desc;
+
+	loadRecords(doctype);
+}
+
+function handleSearch(query) {
+	searchQuery = query.trim().toLowerCase();
+	renderList();
+}
+
+function loadRecords(doctype) {
+	frappe.call({
+		method: 'store_management.api.get_master_records',
+		args: { doctype: doctype },
+		callback: function(response) {
+			currentRecords = response.message || [];
+			renderList();
+		}
+	});
+}
+
+function renderList() {
+	const container = document.getElementById('masters-list');
+	const config = mastersDoctypes[currentDoctype];
+	const fields = config.fields;
+
+	// Filter records based on search query
+	let filteredRecords = currentRecords;
+	if (searchQuery) {
+		const searchField = config.searchField || 'name';
+		filteredRecords = currentRecords.filter(record => {
+			// Search in name field
+			if (record.name && record.name.toLowerCase().includes(searchQuery)) {
+				return true;
+			}
+			// Search in the designated search field (e.g., item_name for Items)
+			if (searchField && record[searchField] && String(record[searchField]).toLowerCase().includes(searchQuery)) {
+				return true;
+			}
+			return false;
+		});
+	}
+
+	if (currentDoctype === 'Item') {
+		const group = document.getElementById('master-item-group');
+		const previous = group.value;
+		const groups = [...new Set(currentRecords.map(row => row.item_group).filter(Boolean))];
+		group.innerHTML = '<option value="">All Item Groups</option>' + groups.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+		group.value = groups.includes(previous) ? previous : '';
+		const status = document.getElementById('master-item-status').value;
+		filteredRecords = filteredRecords.filter(row => (!group.value || row.item_group === group.value) && (!status || (status === 'inactive' ? Number(row.disabled) === 1 : Number(row.disabled || 0) === 0)));
+	}
+	container.classList.toggle('sm-item-table', currentDoctype === 'Item');
+	if (!filteredRecords.length) {
+		const message = searchQuery 
+			? `No matching records found for "${searchQuery}"`
+			: `No records found. Click "New Record" to create your first ${config.title.toLowerCase()}`;
+		container.innerHTML = `
+			<div class="sm-empty-message">
+				<strong>${searchQuery ? 'No results' : 'No records found'}</strong>
+				<p>${message}</p>
+			</div>
+		`;
+		return;
+	}
+
+	// Build column headers
+	const columnLabels = {
+		'name': currentDoctype === 'Item' ? 'Item Code' : 'ID',
+        'stock_uom': 'UOM', 'standard_rate': 'Selling Price', 'disabled': 'Status',
+		'item_name': 'Item Name',
+		'item_group': 'Item Group',
+		'item_group_name': 'Item Group Name',
+		'parent_item_group': 'Parent Item Group',
+		'customer_name': 'Customer Name',
+		'customer_group': 'Customer Group',
+		'customer_group_name': 'Customer Group Name',
+		'parent_customer_group': 'Parent Customer Group',
+		'title': 'Title',
+		'posting_date': 'Date',
+		'amount': 'Amount',
+		'description': 'Description',
+		'company_name': 'Company Name',
+		'default_currency': 'Default Currency',
+		'country': 'Country',
+		'full_name': 'Full Name',
+		'email': 'Email',
+		'user_type': 'User Type'
+	};
+	
+const displayFields = currentDoctype === 'Item' ? ['name','item_name','item_group','stock_uom','standard_rate','disabled'] : currentDoctype === 'Expense' ? ['posting_date', 'description', 'amount'] : fields.slice(0, 3);
+	const headers = displayFields.map(f => `<div>${columnLabels[f] || f}</div>`).join('');
+	const headersWithActions = headers + '<div>Actions</div>';
+
+	const rows = filteredRecords.map(record => {
+		const cells = displayFields.map(field => {
+			if (field === 'disabled') return `<div class="sm-table-cell"><span class="sm-item-status ${Number(record.disabled) === 1 ? 'inactive' : ''}">${Number(record.disabled) === 1 ? 'Inactive' : 'Active'}</span></div>`;
+			if (field === 'standard_rate') return `<div class="sm-table-cell">₹${Number(record.standard_rate || 0).toFixed(2)}</div>`;
+			return `<div class="sm-table-cell">${escapeHtml(String(record[field] ?? '-'))}</div>`;
+		}).join('');
+		return `
+			<div class="sm-table-row">
+				${cells}
+				<div class="sm-table-actions">
+					<button class="sm-action-btn" onclick="editRecord('${escapeAttr(record.name)}')">Edit</button>
+					<button class="sm-action-btn delete" onclick="deleteRecord('${escapeAttr(record.name)}')">Delete</button>
+				</div>
+			</div>
+		`;
+	}).join('');
+
+	container.innerHTML = `
+		<div class="sm-list-table">
+			<div class="sm-table-head">${headersWithActions}</div>
+			${rows}
+		</div>
+	`;
+}
+
+function openCreateForm() {
+	editingRecord = null;
+	currentFormData = { ...(mastersDoctypes[currentDoctype]?.defaults || {}) };
+	renderForm();
+	openModal();
+}
+
+function editRecord(name) {
+	frappe.call({
+		method: 'store_management.api.get_master_record',
+		args: { doctype: currentDoctype, name: name },
+		callback: function(response) {
+			editingRecord = name;
+			currentFormData = response.message || {};
+			renderForm();
+			openModal();
+		}
+	});
+}
+
+function renderForm() {
+	const config = mastersDoctypes[currentDoctype];
+	const container = document.getElementById('modal-form-container');
+	const title = editingRecord ? `Edit ${currentDoctype}` : `New ${currentDoctype}`;
+
+	document.getElementById('modal-title').textContent = title;
+
+	// Check if doctype has custom formFields configuration
+	let formFields;
+	if (config.formFields) {
+		formFields = renderCustomFormFields(config.formFields);
+	} else {
+		// Fallback to simple field rendering
+		formFields = config.fields.map(field => {
+			const value = currentFormData[field] || '';
+			return `
+				<div class="sm-form-group">
+					<label class="sm-form-label">${field}</label>
+					<input 
+						type="text" 
+						class="sm-form-input" 
+						data-field="${field}" 
+						value="${escapeAttr(String(value))}"
+						placeholder="Enter ${field}"
+					>
+				</div>
+			`;
+		}).join('');
+	}
+
+	container.innerHTML = formFields;
+}
+
+function renderCustomFormFields(fields) {
+	let html = '<div class="sm-form-row">';
+	
+	fields.forEach((field, index) => {
+		const value = currentFormData[field.name] || '';
+		const isFullWidth = field.fullWidth === true;
+		
+		html += `<div class="sm-form-group${isFullWidth ? ' full-width' : ''}">`;
+		
+if (field.type === 'checkbox') {
+			// Use saved value if exists, otherwise use default checked property
+			const isChecked = (value === true || value === 1 || value === '1') ? true : (value === false || value === 0 || value === '0') ? false : (field.checked === true);
+			html += `
+				<label class="sm-form-checkbox">
+					<input 
+						type="checkbox" 
+						data-field="${field.name}" 
+						${isChecked ? 'checked' : ''}
+					>
+					<span>${field.label}</span>
+				</label>
+			`;
+		} else if (field.type === 'link') {
+			html += `
+				<label class="sm-form-label">${field.label}${field.required ? '<span class="required">*</span>' : ''}</label>
+				<div class="sm-link-input" data-link-doctype="${field.doctype}" data-field="${field.name}">
+					<button type="button" class="sm-link-btn" onclick="openLinkDropdown('${field.name}')">
+						<span class="${value ? 'sm-link-value' : 'sm-link-placeholder'}">${value || 'Select ' + field.label + '...'}</span>
+						<span>▾</span>
+					</button>
+					<div class="sm-link-dropdown" id="dropdown-${field.name}"></div>
+<input type="hidden" data-field="${field.name}" value="${escapeAttr(String(value))}">
+				</div>
+			`;
+		} else if (field.type === 'select') {
+			const options = (field.options || []).map(option => `<option value="${escapeAttr(option)}" ${String(value) === option ? 'selected' : ''}>${escapeHtml(option)}</option>`).join('');
+			html += `
+				<label class="sm-form-label">${field.label}${field.required ? '<span class="required">*</span>' : ''}</label>
+				<select class="sm-form-select" data-field="${field.name}" ${field.required ? 'required' : ''}>
+					${options}
+				</select>
+			`;
+		} else if (field.type === 'multiselect') {
+			// Multi-select checkbox list for roles
+			const currentValues = String(value || '').split(',').filter(v => v.trim());
+			html += `
+				<label class="sm-form-label">${field.label}${field.required ? '<span class="required">*</span>' : ''}</label>
+				<div class="sm-multiselect-container" id="multiselect-${field.name}" data-doctype="${field.doctype}" data-field="${field.name}">
+					<div class="sm-multiselect-search">
+						<input type="text" class="sm-form-input" placeholder="Search ${field.doctype}..." oninput="filterMultiselectOptions('${field.name}', this.value)">
+					</div>
+					<div class="sm-multiselect-options" id="multiselect-options-${field.name}"></div>
+				</div>
+			`;
+			// Store for later loading
+			setTimeout(() => loadMultiselectOptions(field.name, field.doctype, currentValues), 100);
+		} else if (field.type === 'image') {
+			const imageUrl = String(value || '').trim();
+			html += `
+				<label class="sm-form-label">${field.label}${field.required ? '<span class="required">*</span>' : ''}</label>
+				<div class="sm-image-field">
+					<div class="sm-image-preview" id="preview-${field.name}">
+						${imageUrl ? `<img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(field.label)}">` : '<div class="sm-image-placeholder">No image selected</div>'}
+					</div>
+					<div class="sm-image-actions">
+						<button type="button" class="sm-image-btn" onclick="openImageUploader('${field.name}')">Upload Image</button>
+						<button type="button" class="sm-image-btn" onclick="clearImageField('${field.name}')">Clear</button>
+					</div>
+					<input
+						type="text"
+						class="sm-form-input"
+						data-field="${field.name}"
+						value="${escapeAttr(imageUrl)}"
+						placeholder="Image URL or file path"
+						oninput="updateImagePreview('${field.name}', this.value)"
+					>
+				</div>
+			`;
+		} else {
+			const inputType = field.type === 'number' || field.type === 'currency' || field.type === 'date' ? field.type : 'text';
+			const inputClass = field.type === 'number' || field.type === 'currency' ? `sm-form-input ${inputType}` : 'sm-form-input';
+			html += `
+				<label class="sm-form-label">${field.label}${field.required ? '<span class="required">*</span>' : ''}</label>
+				<input 
+					type="${inputType}" 
+					class="${inputClass}" 
+					data-field="${field.name}" 
+					value="${escapeAttr(String(value))}"
+					placeholder="Enter ${field.label}"
+					${field.required ? 'required' : ''}
+				>
+			`;
+		}
+		
+		html += '</div>';
+		
+		// Handle row breaks: fullWidth fields get their own row, otherwise pair fields
+		if ((index + 1) % 2 === 0 || isFullWidth) {
+			html += '</div><div class="sm-form-row">';
+		}
+	});
+	
+	html += '</div>';
+	return html;
+}
+
+function openImageUploader(fieldName) {
+	if (!frappe.ui || !frappe.ui.FileUploader) {
+		frappe.msgprint('File uploader is not available in this context.');
+		return;
+	}
+
+	new frappe.ui.FileUploader({
+		allow_multiple: false,
+		make_attachments_public: false,
+		allow_toggle_private: false,
+		disable_file_browser: true,
+		allow_web_link: false,
+		restrictions: {
+			allowed_file_types: ['image/*']
+		},
+		on_success(file) {
+			const input = document.querySelector(`input[data-field="${fieldName}"]`);
+			if (!input) return;
+
+			const fileUrl = file.file_url || file.file_name || '';
+			input.value = fileUrl;
+			updateImagePreview(fieldName, fileUrl);
+		}
+	});
+}
+
+function clearImageField(fieldName) {
+	const input = document.querySelector(`input[data-field="${fieldName}"]`);
+	if (!input) return;
+
+	input.value = '';
+	updateImagePreview(fieldName, '');
+}
+
+function updateImagePreview(fieldName, value) {
+	const preview = document.getElementById(`preview-${fieldName}`);
+	if (!preview) return;
+
+	const imageUrl = String(value || '').trim();
+	preview.innerHTML = imageUrl
+		? `<img src="${escapeAttr(imageUrl)}" alt="${escapeAttr(fieldName)}">`
+		: '<div class="sm-image-placeholder">No image selected</div>';
+}
+
+let linkSearchTimeout = null;
+
+function openLinkDropdown(fieldName) {
+	const dropdown = document.getElementById(`dropdown-${fieldName}`);
+	closeAllLinkDropdowns(fieldName);
+
+	if (dropdown.classList.contains('open')) {
+		dropdown.classList.remove('open');
+		return;
+	}
+
+	const linkInput = document.querySelector(`.sm-link-input[data-field="${fieldName}"]`);
+	if (!linkInput) return;
+
+	const hiddenInput = linkInput.querySelector('input[type="hidden"]');
+	const doctype = linkInput.dataset.linkDoctype;
+	const currentValue = hiddenInput ? hiddenInput.value : '';
+	
+	// Clear any existing timeout
+	if (linkSearchTimeout) clearTimeout(linkSearchTimeout);
+	
+	// Debounce the API call
+	linkSearchTimeout = setTimeout(() => {
+		frappe.call({
+			method: ['Country', 'Currency', 'Language', 'Territory'].includes(doctype)
+				? 'store_management.api.get_master_link_records'
+				: 'store_management.api.get_master_records',
+			args: { doctype: doctype },
+			callback: function(response) {
+				const records = response.message || [];
+				linkOptionCache[fieldName] = records.map(record => record.name);
+				dropdown.innerHTML = `
+					<div class="sm-link-search">
+						<input
+							type="text"
+							class="sm-link-search-input"
+							placeholder="Search ${escapeAttr(doctype)}"
+							oninput="filterLinkOptions('${fieldName}', this.value)"
+							onclick="event.stopPropagation()"
+						>
+					</div>
+					<div class="sm-link-options" id="options-${fieldName}">
+						${buildLinkOptionsHtml(fieldName, linkOptionCache[fieldName], currentValue)}
+					</div>
+				`;
+				dropdown.classList.add('open');
+				const searchInput = dropdown.querySelector('.sm-link-search-input');
+				if (searchInput) searchInput.focus();
+			}
+		});
+	}, 150);
+}
+
+function buildLinkOptionsHtml(fieldName, names, currentValue) {
+	if (!names || !names.length) {
+		return '<div class="sm-link-option">No records found</div>';
+	}
+
+	return names.map(name => {
+		const isSelected = name === currentValue;
+		return `<div class="sm-link-option${isSelected ? ' selected' : ''}" onclick="selectLinkOption('${fieldName}', '${escapeAttr(name)}')">${escapeHtml(name)}</div>`;
+	}).join('');
+}
+
+function filterLinkOptions(fieldName, query) {
+	const optionsWrap = document.getElementById(`options-${fieldName}`);
+	const linkInput = document.querySelector(`.sm-link-input[data-field="${fieldName}"]`);
+	const hiddenInput = linkInput ? linkInput.querySelector('input[type="hidden"]') : null;
+	const currentValue = hiddenInput ? hiddenInput.value : '';
+	const allNames = linkOptionCache[fieldName] || [];
+	const normalizedQuery = String(query || '').trim().toLowerCase();
+	const filteredNames = normalizedQuery
+		? allNames.filter(name => String(name || '').toLowerCase().includes(normalizedQuery))
+		: allNames;
+
+	if (optionsWrap) {
+		optionsWrap.innerHTML = buildLinkOptionsHtml(fieldName, filteredNames, currentValue);
+	}
+}
+
+function selectLinkOption(fieldName, value) {
+	const linkInput = document.querySelector(`.sm-link-input[data-field="${fieldName}"]`);
+	if (!linkInput) return;
+
+	const hiddenInput = linkInput.querySelector('input[type="hidden"]');
+	const btn = linkInput.querySelector('.sm-link-btn');
+	const textSpan = btn.querySelector('span');
+
+	if (hiddenInput) {
+		hiddenInput.value = value;
+	}
+
+	if (textSpan) {
+		textSpan.className = value ? 'sm-link-value' : 'sm-link-placeholder';
+		textSpan.textContent = value || 'Select...';
+	}
+
+	const dropdown = document.getElementById(`dropdown-${fieldName}`);
+	dropdown.classList.remove('open');
+}
+
+function closeAllLinkDropdowns(exceptFieldName = null) {
+	document.querySelectorAll('.sm-link-dropdown.open').forEach(dropdown => {
+		if (exceptFieldName && dropdown.id === `dropdown-${exceptFieldName}`) {
+			return;
+		}
+		dropdown.classList.remove('open');
+	});
+}
+
+function handleOutsideDropdownClick(event) {
+	if (event.target.closest('.sm-link-input')) {
+		return;
+	}
+	closeAllLinkDropdowns();
+}
+
+// Multi-select functions for roles
+let multiselectCache = {};
+let multiselectSelectedCache = {};
+
+function loadMultiselectOptions(fieldName, doctype, currentValues) {
+	frappe.call({
+		method: 'store_management.api.get_master_records',
+		args: { doctype: doctype },
+		callback: function(response) {
+			const records = response.message || [];
+			multiselectCache[fieldName] = records.map(record => record.name);
+			multiselectSelectedCache[fieldName] = currentValues || [];
+			renderMultiselectOptions(fieldName);
+		}
+	});
+}
+
+function renderMultiselectOptions(fieldName) {
+	const container = document.getElementById(`multiselect-options-${fieldName}`);
+	if (!container) return;
+
+	const allOptions = multiselectCache[fieldName] || [];
+	const selected = multiselectSelectedCache[fieldName] || [];
+	
+	// Sort: selected items first, then unselected
+	const sortedOptions = [...allOptions].sort((a, b) => {
+		const aSelected = selected.includes(a);
+		const bSelected = selected.includes(b);
+		if (aSelected && !bSelected) return -1;
+		if (!aSelected && bSelected) return 1;
+		return a.localeCompare(b);
+	});
+	
+	container.innerHTML = sortedOptions.map(name => {
+		const isChecked = selected.includes(name);
+		return `
+			<label class="sm-multiselect-checkbox">
+				<input type="checkbox" data-field="${fieldName}" value="${escapeAttr(name)}" ${isChecked ? 'checked' : ''} onchange="toggleMultiselectOption('${fieldName}', '${escapeAttr(name)}', this.checked)">
+				<span>${escapeHtml(name)}</span>
+			</label>
+		`;
+	}).join('');
+	
+	// Also update hidden input with selected values
+	updateMultiselectHidden(fieldName);
+}
+
+function toggleMultiselectOption(fieldName, value, isChecked) {
+	if (!multiselectSelectedCache[fieldName]) {
+		multiselectSelectedCache[fieldName] = [];
+	}
+	
+	if (isChecked) {
+		if (!multiselectSelectedCache[fieldName].includes(value)) {
+			multiselectSelectedCache[fieldName].push(value);
+		}
+	} else {
+		multiselectSelectedCache[fieldName] = multiselectSelectedCache[fieldName].filter(v => v !== value);
+	}
+	
+	updateMultiselectHidden(fieldName);
+}
+
+function updateMultiselectHidden(fieldName) {
+	// We need to create or update a hidden input for saving
+	let hiddenInput = document.querySelector(`input[data-field="${fieldName}"][type="hidden"]`);
+	if (!hiddenInput) {
+		const container = document.getElementById(`multiselect-${fieldName}`);
+		if (container) {
+			hiddenInput = document.createElement('input');
+			hiddenInput.type = 'hidden';
+			hiddenInput.dataset.field = fieldName;
+			container.appendChild(hiddenInput);
+		}
+	}
+	
+	if (hiddenInput) {
+		hiddenInput.value = (multiselectSelectedCache[fieldName] || []).join(', ');
+	}
+}
+
+function filterMultiselectOptions(fieldName, query) {
+	const container = document.getElementById(`multiselect-options-${fieldName}`);
+	if (!container) return;
+
+	const allOptions = multiselectCache[fieldName] || [];
+	const normalizedQuery = String(query || '').trim().toLowerCase();
+	const filteredOptions = normalizedQuery
+		? allOptions.filter(name => String(name || '').toLowerCase().includes(normalizedQuery))
+		: allOptions;
+
+	const selected = multiselectSelectedCache[fieldName] || [];
+	
+	// Sort: selected items first, then unselected
+	const sortedOptions = [...filteredOptions].sort((a, b) => {
+		const aSelected = selected.includes(a);
+		const bSelected = selected.includes(b);
+		if (aSelected && !bSelected) return -1;
+		if (!aSelected && bSelected) return 1;
+		return a.localeCompare(b);
+	});
+	
+	container.innerHTML = sortedOptions.map(name => {
+		const isChecked = selected.includes(name);
+		return `
+			<label class="sm-multiselect-checkbox">
+				<input type="checkbox" data-field="${fieldName}" value="${escapeAttr(name)}" ${isChecked ? 'checked' : ''} onchange="toggleMultiselectOption('${fieldName}', '${escapeAttr(name)}', this.checked)">
+				<span>${escapeHtml(name)}</span>
+			</label>
+		`;
+	}).join('');
+}
+
+function saveRecord() {
+	const config = mastersDoctypes[currentDoctype];
+	const formData = {};
+
+	document.querySelectorAll('input[data-field], textarea[data-field], select[data-field]').forEach(input => {
+		let val = input.value;
+		// Handle checkbox inputs
+		if (input.type === 'checkbox') {
+			val = input.checked ? 1 : 0;
+		} else {
+			val = val.trim();
+		}
+		formData[input.dataset.field] = val;
+	});
+
+	const missingField = (config.formFields || []).find(field => field.required && !String(formData[field.name] || '').trim());
+	if (missingField) {
+		document.querySelector(`[data-field="${missingField.name}"]`)?.focus();
+		frappe.show_alert({ message: 'Please complete all required fields', indicator: 'orange' });
+		return;
+	}
+
+	const method = editingRecord 
+		? 'store_management.api.update_master_record'
+		: 'store_management.api.create_master_record';
+
+	const args = {
+		doctype: currentDoctype,
+		...formData
+	};
+
+	if (editingRecord) {
+		args.name = editingRecord;
+	}
+
+	frappe.call({
+		method: method,
+		args: args,
+		callback: function(response) {
+			if (response.message) {
+				frappe.show_alert({
+					message: `${currentDoctype} ${editingRecord ? 'updated' : 'created'} successfully`,
+					indicator: 'green'
+				});
+				closeModal();
+				loadRecords(currentDoctype);
+				if (currentDoctype === 'Company' && formData.custom_application_language) {
+					localStorage.setItem('my-sales-language', formData.custom_application_language);
+					setTimeout(() => window.location.reload(), 450);
+				}
+			}
+		}
+	});
+}
+
+function deleteRecord(name) {
+	if (!confirm(`Are you sure you want to delete this record?`)) return;
+
+	frappe.call({
+		method: 'store_management.api.delete_master_record',
+		args: { doctype: currentDoctype, name: name },
+		callback: function(response) {
+			frappe.show_alert({
+				message: `${currentDoctype} deleted successfully`,
+				indicator: 'green'
+			});
+			loadRecords(currentDoctype);
+		}
+	});
+}
+
+function openModal() {
+	document.getElementById('masters-modal').classList.add('open');
+	document.getElementById('modal-backdrop').classList.add('open');
+	document.getElementById('masters-modal').setAttribute('aria-hidden', 'false');
+	document.body.classList.add('sm-master-editor-open');
+}
+
+function closeModal() {
+	document.getElementById('masters-modal').classList.remove('open');
+	document.getElementById('modal-backdrop').classList.remove('open');
+	document.getElementById('masters-modal').setAttribute('aria-hidden', 'true');
+	document.body.classList.remove('sm-master-editor-open');
+	editingRecord = null;
+	currentFormData = {};
+}
+
+function escapeHtml(str) {
+	return String(str || '')
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+
+function escapeAttr(str) {
+	return String(str || '')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;');
+}
+</script>
+{% endif %}
+{% endblock %}

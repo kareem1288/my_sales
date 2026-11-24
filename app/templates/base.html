@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="{{ lang or 'en' }}">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>{{ title or "My Sales" }}</title>
+	{% if meta_description %}<meta name="description" content="{{ meta_description }}">{% endif %}
+	<link rel="icon" href="/api/method/store_management.api.get_brand_asset?name=my-sales-icon.svg" type="image/svg+xml">
+	<link rel="stylesheet" href="/assets/store_management/css/app-shim.css">
+	<script type="application/json" id="app-boot">{{ boot_json | safe }}</script>
+	<script src="/assets/store_management/js/frappe-shim.js"></script>
+	{% block head_include %}{% endblock %}
+</head>
+<body class="{{ body_class or '' }}">
+	{% block header %}{% endblock %}
+	{% block navbar %}{% endblock %}
+	<div class="page-content-wrapper">{% block page_content %}{% endblock %}</div>
+	{% block footer %}{% endblock %}
+	{% block script %}{% endblock %}
+</body>
+</html>

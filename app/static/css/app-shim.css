@@ -1,0 +1,20 @@
+/* Styles for the dialogs, alerts and loading overlay provided by frappe-shim.js. */
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;line-height:1.5;-webkit-font-smoothing:antialiased}
+img,svg{vertical-align:middle}
+button,input,select,textarea{font:inherit}
+.app-freeze{position:fixed;inset:0;z-index:2000;display:grid;place-items:center;background:rgba(16,24,20,.28)}
+.app-freeze[hidden]{display:none}
+.app-freeze-box{display:flex;align-items:center;gap:.75rem;padding:1rem 1.25rem;border-radius:1rem;background:#fff;color:#17221d;font:600 .95rem system-ui,sans-serif;box-shadow:0 18px 50px rgba(25,49,37,.18)}
+.app-spinner{width:1.1rem;height:1.1rem;border:3px solid #d6e6dc;border-top-color:#146c43;border-radius:50%;animation:app-spin .8s linear infinite}
+@keyframes app-spin{to{transform:rotate(360deg)}}
+.app-alerts{position:fixed;right:1rem;bottom:1rem;z-index:2100;display:grid;gap:.5rem;max-width:min(24rem,calc(100vw - 2rem))}
+.app-alert{padding:.75rem 1rem;border-radius:.8rem;background:#17221d;color:#fff;font:600 .9rem system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.18);border-left:4px solid #2f80ed}
+.app-alert-green{border-left-color:#22a35a}.app-alert-orange{border-left-color:#f4a340}.app-alert-red{border-left-color:#e45756}
+.app-msgprint{width:min(28rem,calc(100vw - 2rem));padding:0;border:0;border-radius:1.1rem;box-shadow:0 24px 60px rgba(25,49,37,.25);font-family:system-ui,sans-serif;color:#17221d}
+.app-msgprint::backdrop{background:rgba(16,24,20,.35)}
+.app-msgprint form{padding:1.25rem 1.4rem}
+.app-msgprint h3{margin:0 0 .6rem;font-size:1.1rem}
+.app-msgprint-body{margin-bottom:1.1rem;line-height:1.5;color:#3b4a42;overflow-wrap:anywhere}
+.app-msgprint button{min-height:42px;width:100%;border:0;border-radius:.7rem;background:#146c43;color:#fff;font-weight:700;cursor:pointer}
