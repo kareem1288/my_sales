@@ -22,14 +22,21 @@ def _bool(name, default=False):
 
 class Settings:
 	def __init__(self):
+		# Configuration problems are collected instead of raised so a misconfigured
+		# deployment shows a readable setup page rather than crashing on import.
+		self.problems = []
+		production = bool(os.environ.get("VERCEL")) or _bool("PRODUCTION")
 		self.database_url = _normalize_db_url(os.environ.get("DATABASE_URL") or f"sqlite:///{BASE_DIR.parent / 'my_sales.db'}")
-		if os.environ.get("VERCEL") and self.database_url.startswith("sqlite"):
+		if production and self.database_url.startswith("sqlite"):
 			# Serverless filesystems are temporary: every bill would be lost.
-			raise RuntimeError("Set DATABASE_URL to a hosted Postgres database (e.g. Neon) when deploying to Vercel.")
+			self.problems.append(
+				"DATABASE_URL is not set. Add a hosted Postgres connection string (for example from Neon)."
+			)
+			self.database_url = "sqlite://"  # placeholder; never used while problems exist
 		secret = os.environ.get("SECRET_KEY")
 		if not secret:
-			if os.environ.get("VERCEL") or _bool("PRODUCTION"):
-				raise RuntimeError("SECRET_KEY must be set in production.")
+			if production:
+				self.problems.append("SECRET_KEY is not set. Add a long random string.")
 			secret = "dev-insecure-" + secrets.token_hex(8)
 		self.secret_key = secret
 		self.secure_cookies = _bool("SECURE_COOKIES", bool(os.environ.get("VERCEL")))

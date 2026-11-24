@@ -7,10 +7,12 @@ Routes mirror the original Frappe app so the existing frontend works unchanged:
 """
 
 import csv
+import html
 import json
 import logging
 import mimetypes
 import secrets
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -21,6 +23,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
+from starlette.concurrency import run_in_threadpool
 from starlette.middleware.sessions import SessionMiddleware
 
 from . import auth
@@ -37,11 +40,30 @@ from .services import accounts, assistant, dashboard, masters, pos, reports  # n
 log = logging.getLogger("my_sales")
 settings = get_settings()
 
+_db_ready = False
+_db_lock = threading.Lock()
+
+
+def ensure_database():
+	"""Create tables and reference data once per process (lifespan may not run on serverless hosts)."""
+	global _db_ready
+	if _db_ready:
+		return
+	with _db_lock:
+		if not _db_ready:
+			init_db()
+			with session_scope() as db:
+				ensure_global_data(db)
+			_db_ready = True
+
+
 @asynccontextmanager
 async def lifespan(_app):
-	init_db()
-	with session_scope() as db:
-		ensure_global_data(db)
+	if not settings.problems:
+		try:
+			ensure_database()
+		except Exception:
+			log.exception("Database initialisation failed at startup; will retry on first request")
 	yield
 
 
@@ -50,6 +72,38 @@ app.add_middleware(
 	SessionMiddleware, secret_key=settings.secret_key, session_cookie="my_sales_sid",
 	max_age=14 * 24 * 3600, same_site="lax", https_only=settings.secure_cookies,
 )
+
+
+def _setup_page(title, items, status=503):
+	rows = "".join(f"<li>{html.escape(item)}</li>" for item in items)
+	page = (
+		"<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>"
+		f"<title>{html.escape(title)} · My Sales</title><style>body{{margin:0;min-height:100vh;display:grid;place-items:center;"
+		"padding:16px;background:#f4f8f5;color:#17221d;font-family:system-ui,sans-serif}main{max-width:36rem;padding:2rem;"
+		"background:#fff;border:1px solid #dfe7e2;border-radius:1.25rem}h1{margin:0 0 .5rem;font-size:1.4rem}li{margin:.4rem 0}"
+		"p{color:#56635c;line-height:1.5}</style></head><body><main>"
+		f"<h1>{html.escape(title)}</h1><ul>{rows}</ul>"
+		"<p>Set these in your hosting provider's environment variables (Vercel: Project → Settings → Environment Variables), "
+		"then redeploy. See README.md for the full list.</p></main></body></html>"
+	)
+	return HTMLResponse(page, status_code=status, headers={"Cache-Control": "no-store"})
+
+
+@app.middleware("http")
+async def require_ready(request: Request, call_next):
+	if settings.problems:
+		return _setup_page("My Sales needs configuration", settings.problems)
+	try:
+		await run_in_threadpool(ensure_database)
+	except Exception as error:
+		log.exception("Database is not reachable")
+		return _setup_page("My Sales cannot reach its database", [
+			f"Connecting to DATABASE_URL failed ({type(error).__name__}). Check the connection string, "
+			"that the database exists, and that it accepts connections from Vercel (sslmode=require for Neon).",
+		])
+	return await call_next(request)
+
+
 app.mount("/assets/store_management", StaticFiles(directory=BASE_DIR / "static"), name="assets")
 
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
